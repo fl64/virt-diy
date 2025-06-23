@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: diy
+
+resources:
+- ./ns.yaml
+# - ./pod.yaml
+- ./pvc.yaml
+- ./deploy.yaml
+
+commonAnnotations:
+  xxx: xxx
+
+# labels:
+# - includeSelectors: true
+#   pairs:
+#     vm: vm-01
+
+# generatorOptions:
+#   disableNameSuffixHash: true
+
+configMapGenerator:
+- files:
+  - user-data=cfg/user-data.yaml
+  - meta-data=cfg/meta-data.yaml
+  name: cloud-init
+- files:
+  - entrypoint.sh=cfg/entrypoint.sh
+  name: entrypoint

@@ -1,0 +1,36 @@
+ # https://taskfile.dev
+
+version: "3"
+
+vars:
+  DOCKER_TAG: 0.0.1
+  DOCKER_IMAGE: "docker.io/fl64/vm-diy:{{ .DOCKER_TAG }}"
+
+
+tasks:
+  docker-build:
+    cmds:
+      - docker build -t {{ .DOCKER_IMAGE }} -f ./image/Dockerfile .
+
+  docker-push:
+    deps:
+      - docker-build
+    cmds:
+      - docker push {{ .DOCKER_IMAGE }}
+
+
+  deploy:
+    cmds:
+    - kubectl apply -k ./manifests
+
+  undeploy:
+    cmds:
+    - kubectl delete -k ./manifests
+
+  con:
+    cmds:
+    - kubectl -n diy exec -it deploy/vm -- virsh console vm
+
+  exec:
+    cmds:
+    - kubectl -n diy exec -it deploy/vm -- bash

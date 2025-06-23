@@ -1,0 +1,8 @@
+#cloud-config
+users:
+  - name: cloud
+    passwd: $6$7aSB2MyvJn6FcDM8$vYdRNmurQ0XJ22i9v.boMjZYfEdBNqScIXV2PB4zIm4LfddBHarFdJtceVy6AXLWnkq87UULH9VW4aEcRW3LX/
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: false
+final_message: "🔥🔥🔥 The system is finally up, after $UPTIME seconds 🔥🔥🔥"
