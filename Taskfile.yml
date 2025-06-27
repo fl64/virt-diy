@@ -14,7 +14,9 @@ tasks:
     cmds:
       - yes | ssh-keygen -t ed25519 -b 1024 -f ./test/diy -N "" -C "diy" -v
       - chmod 400 ./test/diy
-
+      - export SSH_PUB=$(cat ./test/diy.pub) && sed -i "s|ssh-ed25519 [^ ]* diy|${SSH_PUB}|g" ./manifests/cfg/user-data.yaml
+    status:
+      - test -f ./test/diy
 
   docker-build:
     cmds:
