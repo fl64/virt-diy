@@ -5,9 +5,16 @@ version: "3"
 vars:
   DOCKER_TAG: 0.0.1
   DOCKER_IMAGE: "docker.io/fl64/vm-diy:{{ .DOCKER_TAG }}"
+  NAMESPACE: diy
 
 
 tasks:
+
+  ssh-gen:
+    cmds:
+      - yes | ssh-keygen -t ed25519 -b 1024 -f ./test/diy -N "" -C "diy" -v
+
+
   docker-build:
     cmds:
       - docker build -t {{ .DOCKER_IMAGE }} -f ./image/Dockerfile .
@@ -34,3 +41,11 @@ tasks:
   exec:
     cmds:
     - kubectl -n diy exec -it deploy/vm -- bash
+
+  port-forward:
+    cmds:
+    - kubectl -n diy port-forward deploy/vm 2222:2222
+
+  ssh:
+    cmds:
+    - ssh -p 2222 -i ./test/diy -o StrictHostKeyChecking=no cloud@localhost

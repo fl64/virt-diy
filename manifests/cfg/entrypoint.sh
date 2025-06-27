@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# Configuration variables for easy customization
 VM_NAME="vm"
 IMAGE_URL="https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
 # IMAGE_PATH="/disks/image.qcow2"
@@ -11,7 +10,6 @@ VM_VCPUS=2
 VM_CPU="Nehalem"
 VM_OS_VARIANT="ubuntu24.04"
 
-# Cleanup function to handle SIGTERM and shutdown VM/services
 cleanup() {
     echo "☠️ Received SIGTERM, initiating cleanup..."
 
@@ -49,10 +47,29 @@ cleanup() {
     exit 0
 }
 
+check_vm_status() {
+    if virsh list --state-running | grep -q "$VM_NAME.*running"; then
+        echo -n "💡 VM is running"
+        if virsh qemu-agent-command $VM_NAME '{"execute":"guest-ping"}' > /dev/null 2>&1; then
+            echo -n ", guest agent is working"
+            virsh qemu-agent-command $VM_NAME '{"execute":"guest-get-osinfo"}' | jq -c
+
+            touch /tmp/ready
+        else
+            echo ", but guest agent is not responding"
+            rm -rf /tmp/ready
+            return 1
+        fi
+    else
+        echo "⚠️ VM is not running"
+        rm -rf /tmp/ready
+        return 1
+    fi
+}
+
 # Set trap to call cleanup on SIGTERM
 trap cleanup SIGTERM
 
-# Create ISO file with cloud-init configuration
 echo "🛠️ Creating ISO with cloud-init"
 cp -L /config/user-data /tmp/user-data
 cp -L /config/meta-data /tmp/meta-data
@@ -68,8 +85,6 @@ else
     echo "✅ Disk image already exists"
 fi
 
-
-# Start libvirt services
 echo "🚀 Starting libvirt services"
 (/usr/sbin/libvirtd 2>&1 | sed 's/^/[libvirtd] /') &
 (/usr/sbin/virtlogd 2>&1 | sed 's/^/[virtlogd] /') &
@@ -100,21 +115,18 @@ virt-install \
     --virt-type kvm \
     --force
 
+echo "⏳ Waiting for VM and guest agent to start..."
+until check_vm_status ; do
+  sleep 1
+done
+
+VM_IP=$(virsh domifaddr "$VM_NAME" | grep ipv4 | awk '{print $4}' | cut -d'/' -f1)
+
+echo "🌐 VM IP-address: $VM_IP"
+socat TCP-LISTEN:2222,fork TCP:$VM_IP:22 &
+
 echo "👀 Monitoring VM status"
 while true; do
-    if virsh list --state-running | grep -q "$VM_NAME.*running"; then
-        echo -n "💡 VM is running"
-        if virsh qemu-agent-command $VM_NAME '{"execute":"guest-ping"}' > /dev/null 2>&1; then
-            echo -n ", guest agent is working"
-            virsh qemu-agent-command $VM_NAME '{"execute":"guest-get-osinfo"}' | jq -c
-
-            touch /tmp/ready
-        else
-            echo ", but guest agent is not responding"
-        fi
-    else
-        echo "⚠️ VM is not running"
-        rm -rf /tmp/ready
-    fi
+    check_vm_status
     sleep 10
 done

@@ -13,7 +13,8 @@ RUN apk add --no-cache \
     tcpdump \
     xorriso \
     jq \
-    socat
+    socat \
+    openssh
 
 # COPY start.sh /start.sh
 # RUN chmod +x /start.sh
