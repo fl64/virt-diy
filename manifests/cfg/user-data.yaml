@@ -5,4 +5,9 @@ users:
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     lock_passwd: false
+package_update: true
+packages:
+  - qemu-guest-agent
+runcmd:
+  - systemctl enable --now qemu-guest-agent.service
 final_message: "🔥🔥🔥 The system is finally up, after $UPTIME seconds 🔥🔥🔥"
