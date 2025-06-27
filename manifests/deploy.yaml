@@ -35,6 +35,13 @@ spec:
             - name: entrypoint
               mountPath: /entrypoint.sh
               subPath: entrypoint.sh
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/ready
+            initialDelaySeconds: 30
+            periodSeconds: 10
       volumes:
         - name: disk
           persistentVolumeClaim:
