@@ -5,6 +5,8 @@ users:
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     lock_passwd: false
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOZh3owl/9wrFVtLIRdDl2woMOILSZpi30SGKAu9YdqT diy
 package_update: true
 packages:
   - qemu-guest-agent
