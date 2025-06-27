@@ -6,7 +6,6 @@ IMAGE_URL="https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-a
 # IMAGE_PATH="/disks/image.qcow2"
 IMAGE_PATH="/tmp/image.qcow2"
 ISO_PATH="/tmp/cidata.iso"
-QMP_SOCKET="/tmp/qmp.sock"
 VM_RAM=3072
 VM_VCPUS=2
 VM_CPU="Nehalem"
@@ -108,11 +107,14 @@ while true; do
         if virsh qemu-agent-command $VM_NAME '{"execute":"guest-ping"}' > /dev/null 2>&1; then
             echo -n ", guest agent is working"
             virsh qemu-agent-command $VM_NAME '{"execute":"guest-get-osinfo"}' | jq -c
+
+            touch /tmp/ready
         else
             echo ", but guest agent is not responding"
         fi
     else
         echo "⚠️ VM is not running"
+        rm -rf /tmp/ready
     fi
     sleep 10
 done
