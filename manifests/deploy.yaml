@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vm
+  namespace: diy
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vm
+  template:
+    metadata:
+      labels:
+        app: vm
+    spec:
+      containers:
+        - image: docker.io/fl64/vm-diy:0.0.1
+          imagePullPolicy: Always
+          command: ["/entrypoint.sh"]
+          name: compute
+          resources: {}
+          securityContext:
+            privileged: true
+            # capabilities:
+            #   add: ["NET_ADMIN", "SYS_ADMIN"]
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /disks/
+              name: disk
+            - name: cloud-init
+              mountPath: /config
+            - name: entrypoint
+              mountPath: /entrypoint.sh
+              subPath: entrypoint.sh
+      volumes:
+        - name: disk
+          persistentVolumeClaim:
+            claimName: disk
+        - name: kvm
+          hostPath:
+            path: /dev/kvm
+            type: ""
+        - name: cloud-init
+          configMap:
+            name: cloud-init
+        - name: entrypoint
+          configMap:
+            name: entrypoint
+            defaultMode: 0777
