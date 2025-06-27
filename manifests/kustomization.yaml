@@ -8,9 +8,7 @@ resources:
 # - ./pod.yaml
 - ./pvc.yaml
 - ./deploy.yaml
-
-commonAnnotations:
-  xxx: xxx
+- ./svc.yaml
 
 # labels:
 # - includeSelectors: true

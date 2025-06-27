@@ -13,6 +13,7 @@ tasks:
   ssh-gen:
     cmds:
       - yes | ssh-keygen -t ed25519 -b 1024 -f ./test/diy -N "" -C "diy" -v
+      - chmod 400 ./test/diy
 
 
   docker-build:
@@ -49,3 +50,7 @@ tasks:
   ssh:
     cmds:
     - ssh -p 2222 -i ./test/diy -o StrictHostKeyChecking=no cloud@localhost
+
+  get-node-port:
+    cmds:
+    -  kubectl -n diy get svc ssh -o json | jq '.spec.ports[] | select(.port==2222) | .nodePort'
